@@ -380,4 +380,4 @@ const defaultShadows = [
   ...defaultTheme.shadows.slice(2),
 ];
 
-export const shadows = defaultShadows;
+export const shadows = defaultShadows as any;

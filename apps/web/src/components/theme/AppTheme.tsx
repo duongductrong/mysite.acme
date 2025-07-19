@@ -1,6 +1,7 @@
+import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
-import type { ThemeOptions } from "@mui/material/styles";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { ThemeProvider } from "@mui/material";
+import { createTheme } from "@mui/material/styles";
 import * as React from "react";
 import { dataDisplayCustomizations } from "./customizations/dataDisplay";
 import { feedbackCustomizations } from "./customizations/feedbacks";
@@ -8,21 +9,31 @@ import { inputsCustomizations } from "./customizations/inputs";
 import { navigationCustomizations } from "./customizations/navigation";
 import { surfacesCustomizations } from "./customizations/surfaces";
 import { colorSchemes, shadows, shape, typography } from "./themePrimitives";
-import { createEmotionCache } from "./createEmotionCache";
+import {
+  chartsCustomizations,
+  dataGridCustomizations,
+  datePickersCustomizations,
+  treeViewCustomizations,
+} from "./customizations";
+
+const themeComponents = {
+  ...chartsCustomizations,
+  ...dataGridCustomizations,
+  ...datePickersCustomizations,
+  ...treeViewCustomizations,
+};
 
 interface AppThemeProps {
   children: React.ReactNode;
-  /**
-   * This is for the docs site. You can ignore it or remove it.
-   */
   disableCustomTheme?: boolean;
-  themeComponents?: ThemeOptions["components"];
 }
 
-const cache = createEmotionCache();
+export default function AppTheme({
+  children,
+  disableCustomTheme,
+}: AppThemeProps) {
+  const emotionCache = createCache({ key: "css" });
 
-export default function AppTheme(props: AppThemeProps) {
-  const { children, disableCustomTheme, themeComponents } = props;
   const theme = React.useMemo(() => {
     return disableCustomTheme
       ? {}
@@ -45,12 +56,12 @@ export default function AppTheme(props: AppThemeProps) {
             ...themeComponents,
           },
         });
-  }, [disableCustomTheme, themeComponents]);
+  }, [disableCustomTheme]);
   if (disableCustomTheme) {
     return <React.Fragment>{children}</React.Fragment>;
   }
   return (
-    <CacheProvider value={cache}>
+    <CacheProvider value={emotionCache}>
       <ThemeProvider theme={theme} disableTransitionOnChange>
         {children}
       </ThemeProvider>

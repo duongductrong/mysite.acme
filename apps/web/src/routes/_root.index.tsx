@@ -5,13 +5,9 @@ import SideMenu from "@/components/SideMenu";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import { alpha } from "@mui/material/styles";
-import type { } from "@mui/x-charts/themeAugmentation";
-import type { } from "@mui/x-data-grid-pro/themeAugmentation";
-import type { } from "@mui/x-date-pickers/themeAugmentation";
-import type { } from "@mui/x-tree-view/themeAugmentation";
 import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_root/")({
   component: Home,
 });
 
@@ -20,7 +16,6 @@ function Home(props: { disableCustomTheme?: boolean }) {
     <Box sx={{ display: "flex" }}>
       <SideMenu />
       <AppNavbar />
-      {/* Main content */}
       <Box
         component="main"
         sx={(theme) => ({
