@@ -1,0 +1,64 @@
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcryptjs';
+import { Repository } from 'typeorm';
+import { UserEntity } from './entities/user.entity';
+import { UserRole } from './user.constant';
+
+@Injectable()
+export class UserService {
+  @InjectRepository(UserEntity)
+  private readonly userRepo: Repository<UserEntity>;
+
+  findUserByEmail(email: string): Promise<UserEntity | null> {
+    return this.userRepo.findOne({
+      where: {
+        email,
+      },
+    });
+  }
+
+  createSuperAdmin(user: Omit<UserEntity, 'role'>): Promise<UserEntity | null> {
+    const userCreated = this.userRepo.create({
+      ...user,
+      role: UserRole.SuperAdmin,
+    });
+
+    return this.userRepo.save(userCreated);
+  }
+
+  async createUser(
+    payload: Pick<
+      UserEntity,
+      'email' | 'firstName' | 'lastName' | 'role' | 'password' | 'isActive'
+    >,
+  ): Promise<UserEntity | null> {
+    const user = await this.userRepo.findOne({
+      where: {
+        email: payload.email,
+      },
+    });
+
+    if (user) {
+      throw new BadRequestException('User already exists');
+    }
+
+    const hashedPassword = await bcrypt.hash(payload.password, 10);
+
+    const userCreated = this.userRepo.create({
+      role: UserRole.Customer,
+      ...payload,
+      password: hashedPassword,
+    });
+
+    return this.userRepo.save(userCreated);
+  }
+
+  softDelete(id: number) {
+    return this.userRepo.softDelete(id);
+  }
+
+  permanentDelete(id: number) {
+    return this.userRepo.delete(id);
+  }
+}
