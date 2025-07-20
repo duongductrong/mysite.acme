@@ -6,9 +6,9 @@ import Stack from "@mui/material/Stack";
 import { styled } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 import CardAlert from "./CardAlert";
-import MenuContent from "./MenuContent";
-import OptionsMenu from "./OptionsMenu";
 import ProfileSelection from "./ProfileSelection";
+import SideMenuContent from "./SideMenuContent";
+import SideMenuOptionsMenu from "./SideMenuOptionsMenu";
 
 const drawerWidth = 240;
 
@@ -52,8 +52,9 @@ export default function SideMenu() {
           display: "flex",
           flexDirection: "column",
         }}
+        aria-test="true"
       >
-        <MenuContent />
+        <SideMenuContent />
         <CardAlert />
       </Box>
       <Stack
@@ -83,7 +84,7 @@ export default function SideMenu() {
             riley@email.com
           </Typography>
         </Box>
-        <OptionsMenu />
+        <SideMenuOptionsMenu />
       </Stack>
     </Drawer>
   );

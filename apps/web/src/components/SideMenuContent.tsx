@@ -42,7 +42,7 @@ const secondaryListItems = [
   { text: "Feedback", icon: <HelpRoundedIcon /> },
 ];
 
-export default function MenuContent() {
+export default function SideMenuContent() {
   return (
     <Stack sx={{ flexGrow: 1, p: 1, justifyContent: "space-between" }}>
       <List dense>

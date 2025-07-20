@@ -8,7 +8,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import CardAlert from "./CardAlert";
 import MenuButton from "./MenuButton";
-import MenuContent from "./MenuContent";
+import SideMenuContent from "./SideMenuContent";
 
 interface SideMenuMobileProps {
   open: boolean | undefined;
@@ -59,7 +59,7 @@ export default function SideMenuMobile({
         </Stack>
         <Divider />
         <Stack sx={{ flexGrow: 1 }}>
-          <MenuContent />
+          <SideMenuContent />
           <Divider />
         </Stack>
         <CardAlert />
