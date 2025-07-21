@@ -1,14 +1,9 @@
-import {
-  Body,
-  Controller,
-  Inject,
-  Post,
-  Request,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Inject, Post, UseGuards } from '@nestjs/common';
 import { ApiBuilder } from 'src/shared/api';
 import { AuthService } from './auth.service';
-import { SignUpDto } from './dtos/sign-up.dto';
+import { LoginRequest } from './dtos/login.dto';
+import { SignUpRequest } from './dtos/sign-up.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 
 @Controller({
@@ -20,20 +15,30 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  login(@Request() req: any) {
+  async login(@Body() body: LoginRequest) {
+    const result = await this.authService.login(body);
     return ApiBuilder.create()
-      .setData(this.authService.login(req.user))
+      .setData(result)
       .setMessage('Login successful')
       .build();
   }
 
   @Post('signup')
-  async signup(@Body() body: SignUpDto) {
+  async signup(@Body() body: SignUpRequest) {
     const result = await this.authService.signup(body);
 
     return ApiBuilder.create()
       .setData(result)
       .setMessage('User created successfully')
+      .build();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  async me() {
+    return ApiBuilder.create()
+      .setData([])
+      .setMessage('User fetched successfully')
       .build();
   }
 }

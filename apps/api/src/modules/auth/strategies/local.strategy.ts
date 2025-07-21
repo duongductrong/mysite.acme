@@ -9,7 +9,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   private readonly authService: AuthService;
 
   async validate(username: string, password: string): Promise<any> {
-    const user = await this.authService.validateUser(username, password);
+    const user = await this.authService.verifyUser(username, password);
     if (!user) {
       throw new NotFoundException('We could not find any user with that email');
     }

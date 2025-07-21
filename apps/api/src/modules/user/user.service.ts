@@ -15,6 +15,18 @@ export class UserService {
       where: {
         email,
       },
+      select: {
+        password: true,
+        createdAt: true,
+        deletedAt: true,
+        email: true,
+        firstName: true,
+        id: true,
+        isActive: true,
+        lastName: true,
+        role: true,
+        updatedAt: true,
+      },
     });
   }
 
