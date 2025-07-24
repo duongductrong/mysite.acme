@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
-import { Repository } from 'typeorm';
+import { FindOptionsSelect, FindOptionsWhere, Repository } from 'typeorm';
 import { UserEntity } from './entities/user.entity';
 import { UserRole } from './user.constant';
 
@@ -10,10 +10,18 @@ export class UserService {
   @InjectRepository(UserEntity)
   private readonly userRepo: Repository<UserEntity>;
 
-  findUserByEmail(email: string): Promise<UserEntity | null> {
+  findUserByEmail(
+    email: string,
+    options?: {
+      select?: FindOptionsSelect<UserEntity>;
+      where?: FindOptionsWhere<UserEntity>;
+    },
+  ): Promise<UserEntity | null> {
     return this.userRepo.findOne({
       where: {
         email,
+        deletedAt: null,
+        ...options?.where,
       },
       select: {
         password: true,
@@ -27,14 +35,23 @@ export class UserService {
         lastName: true,
         role: true,
         updatedAt: true,
+        ...options?.select,
       },
     });
   }
 
-  findUserById(id: number): Promise<UserEntity | null> {
+  findUserById(
+    id: number,
+    options?: {
+      select?: FindOptionsSelect<UserEntity>;
+      where?: FindOptionsWhere<UserEntity>;
+    },
+  ): Promise<UserEntity | null> {
     return this.userRepo.findOne({
       where: {
         id,
+        deletedAt: null,
+        ...options?.where,
       },
       select: {
         password: true,
@@ -48,6 +65,7 @@ export class UserService {
         lastName: true,
         role: true,
         updatedAt: true,
+        ...options?.select,
       },
     });
   }

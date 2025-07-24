@@ -7,6 +7,7 @@ import { RefreshTokenRequest } from './dtos/refresh-token.dto';
 import { SignUpRequest } from './dtos/sign-up.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
+import { omit } from 'lodash';
 
 @Controller({
   path: 'auth',
@@ -38,10 +39,8 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async me(@CurrentUser() user: UserEntity) {
-    console.log(user);
-
     return ApiBuilder.create()
-      .setData([])
+      .setData(omit(user, ['refreshToken', 'password']))
       .setMessage('User fetched successfully')
       .build();
   }
