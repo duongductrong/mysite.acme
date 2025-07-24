@@ -21,8 +21,30 @@ export class UserService {
         deletedAt: true,
         email: true,
         firstName: true,
+        refreshToken: true,
         id: true,
         isActive: true,
+        lastName: true,
+        role: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  findUserById(id: number): Promise<UserEntity | null> {
+    return this.userRepo.findOne({
+      where: {
+        id,
+      },
+      select: {
+        password: true,
+        createdAt: true,
+        deletedAt: true,
+        email: true,
+        firstName: true,
+        id: true,
+        isActive: true,
+        refreshToken: true,
         lastName: true,
         role: true,
         updatedAt: true,
@@ -64,6 +86,10 @@ export class UserService {
     });
 
     return this.userRepo.save(userCreated);
+  }
+
+  updateUser(id: number, payload: Partial<UserEntity>) {
+    return this.userRepo.update(id, payload);
   }
 
   softDelete(id: number) {

@@ -40,6 +40,12 @@ export class UserEntity {
 
   @Column({
     type: 'varchar',
+    nullable: true,
+  })
+  refreshToken?: string;
+
+  @Column({
+    type: 'varchar',
     select: false,
   })
   @Exclude()

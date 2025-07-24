@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Inject,
   Injectable,
   NotFoundException,
@@ -6,9 +7,10 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import { UserEntity } from '../user/entities/user.entity';
 import { UserRole } from '../user/user.constant';
 import { UserService } from '../user/user.service';
-import { LoginRequest } from './dtos/login.dto';
+import { AuthTokenPayload } from './classes/auth-token-payload';
 import { SignUpRequest } from './dtos/sign-up.dto';
 import { jwtConstants } from './jwt.constants';
 
@@ -19,6 +21,12 @@ export class AuthService {
 
   @Inject(UserService)
   private readonly userService: UserService;
+
+  private isRefreshTokenValid(token: string | null | undefined): boolean {
+    if (!token) return false;
+
+    return !!this.jwtService.verify(token);
+  }
 
   async verifyUser(email: string, password: string) {
     const user = await this.userService.findUserByEmail(email);
@@ -43,20 +51,69 @@ export class AuthService {
     return user;
   }
 
-  async login(payload: LoginRequest) {
-    const user = await this.userService.findUserByEmail(payload.username);
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    const accessToken = this.jwtService.sign({
+  async login(user: UserEntity) {
+    const authTokenPayload: AuthTokenPayload = new AuthTokenPayload({
       id: user.id,
       email: user.email,
       role: user.role,
     });
 
-    return { accessToken, expiresIn: jwtConstants.expiresIn };
+    const authTokenPayloadPlainObject = Object.assign({}, authTokenPayload);
+
+    const accessToken = this.jwtService.sign(authTokenPayloadPlainObject);
+    const refreshToken =
+      user.refreshToken && this.isRefreshTokenValid(user.refreshToken)
+        ? user.refreshToken
+        : this.jwtService.sign(authTokenPayloadPlainObject, {
+            expiresIn: jwtConstants.refreshExpiresIn,
+          });
+
+    // If the refresh token is not valid, we need to update it
+    if (user.refreshToken !== refreshToken) {
+      await this.userService.updateUser(user.id, {
+        refreshToken: refreshToken,
+      });
+    }
+
+    return {
+      accessToken,
+      refreshToken,
+      expiresIn: Number(jwtConstants.expiresIn),
+    };
+  }
+
+  async refresh(refreshToken: string) {
+    let decoded: AuthTokenPayload | null = null;
+
+    try {
+      decoded = this.jwtService.verify(refreshToken);
+    } catch (error) {
+      throw new BadRequestException(
+        'Bad request! The refresh token is invalid or expired',
+      );
+    }
+
+    if (!decoded) {
+      throw new BadRequestException(
+        'Bad request! The refresh token is invalid or expired',
+      );
+    }
+
+    const user = await this.userService.findUserById(decoded.id);
+
+    if (user.refreshToken !== refreshToken) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    const payload = new AuthTokenPayload({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
+    const accessToken = this.jwtService.sign(Object.assign({}, payload));
+
+    return { accessToken, expiresIn: Number(jwtConstants.expiresIn) };
   }
 
   signup(payload: SignUpRequest) {
