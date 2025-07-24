@@ -1,3 +1,4 @@
+import { milliseconds, Time } from '@/utils/time';
 import {
   Body,
   Controller,
@@ -5,8 +6,10 @@ import {
   Inject,
   Param,
   Post,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { omit } from 'lodash';
 import { ApiBuilder } from 'src/shared/api';
 import { UserEntity } from '../user/entities/user.entity';
@@ -17,6 +20,7 @@ import { SignUpRequest } from './dtos/sign-up.dto';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
+import { jwtConstants } from './jwt.constants';
 
 @Controller({
   path: 'auth',
@@ -27,8 +31,26 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@CurrentUser() user: UserEntity) {
+  async login(
+    @CurrentUser() user: UserEntity,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     const result = await this.authService.login(user);
+
+    response.cookie('accessToken', result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: Number(jwtConstants.expiresIn),
+    });
+
+    console.log(milliseconds(jwtConstants.refreshExpiresIn as Time));
+
+    response.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: milliseconds(jwtConstants.refreshExpiresIn as Time),
+    });
+
     return ApiBuilder.create()
       .setData(result)
       .setMessage('Login successful')
