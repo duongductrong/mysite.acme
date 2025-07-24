@@ -25,7 +25,11 @@ export class AuthService {
   private isRefreshTokenValid(token: string | null | undefined): boolean {
     if (!token) return false;
 
-    return !!this.jwtService.verify(token);
+    try {
+      return !!this.jwtService.verify(token);
+    } catch {
+      return false;
+    }
   }
 
   async verifyUser(email: string, password: string) {
