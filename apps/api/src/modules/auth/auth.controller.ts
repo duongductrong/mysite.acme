@@ -1,13 +1,22 @@
-import { Body, Controller, Get, Inject, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import { omit } from 'lodash';
 import { ApiBuilder } from 'src/shared/api';
 import { UserEntity } from '../user/entities/user.entity';
 import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { RefreshTokenRequest } from './dtos/refresh-token.dto';
 import { SignUpRequest } from './dtos/sign-up.dto';
+import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
-import { omit } from 'lodash';
 
 @Controller({
   path: 'auth',
@@ -56,6 +65,26 @@ export class AuthController {
         accessToken: newAccessToken,
       })
       .setMessage('Token refreshed successfully')
+      .build();
+  }
+
+  @UseGuards(GoogleAuthGuard)
+  @Get('/google')
+  async google() {
+    return ApiBuilder.create()
+      .setData({})
+      .setMessage('Auth successful')
+      .build();
+  }
+
+  @UseGuards(GoogleAuthGuard)
+  @Get('/callback/:providerId')
+  async oauthCallback(@Param('providerId') providerId: string) {
+    return ApiBuilder.create()
+      .setData({
+        providerId,
+      })
+      .setMessage('Auth successful')
       .build();
   }
 }
