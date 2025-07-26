@@ -1,10 +1,10 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateUserTable1753031932381 implements MigrationInterface {
-  name = 'CreateUserTable1753031932381';
+export class CreateUserTable1753555058551 implements MigrationInterface {
+    name = 'CreateUserTable1753555058551'
 
-  public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`
             CREATE TYPE "public"."users_role_enum" AS ENUM(
                 'super_admin',
                 'admin',
@@ -13,15 +13,20 @@ export class CreateUserTable1753031932381 implements MigrationInterface {
                 'other'
             )
         `);
-    await queryRunner.query(`
+        await queryRunner.query(`
             CREATE TABLE "users" (
                 "id" SERIAL NOT NULL,
                 "first_name" character varying(255),
                 "last_name" character varying(255),
                 "email" character varying NOT NULL,
                 "refresh_token" character varying,
-                "password" character varying NOT NULL,
+                "password" character varying,
                 "role" "public"."users_role_enum" NOT NULL,
+                "picture" character varying,
+                "metadata" jsonb,
+                "provider" character varying(255),
+                "provider_id" character varying(255),
+                "email_verified" boolean,
                 "created_at" TIMESTAMP NOT NULL DEFAULT now(),
                 "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
                 "deleted_at" TIMESTAMP,
@@ -30,14 +35,15 @@ export class CreateUserTable1753031932381 implements MigrationInterface {
                 CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id")
             )
         `);
-  }
+    }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`
             DROP TABLE "users"
         `);
-    await queryRunner.query(`
+        await queryRunner.query(`
             DROP TYPE "public"."users_role_enum"
         `);
-  }
+    }
+
 }

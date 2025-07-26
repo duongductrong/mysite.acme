@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import { Profile } from 'passport-google-oauth20';
 import { UserEntity } from '../user/entities/user.entity';
 import { UserRole } from '../user/user.constant';
 import { UserService } from '../user/user.service';
@@ -55,6 +56,37 @@ export class AuthService {
     return user;
   }
 
+  async verifyGoogleUserOrCreate(
+    providerId: string,
+    profile: Profile,
+    accessToken: string,
+  ) {
+    const user = await this.userService.findUserByProvider({
+      provider: 'google',
+      providerId,
+    });
+
+    if (user) return user;
+
+    const userCreated = await this.userService.createUser({
+      email: profile.emails?.[0]?.value,
+      emailVerified: profile.emails?.[0]?.verified,
+      isActive: true,
+      password: null,
+      provider: 'google',
+      providerId: profile.id,
+      firstName: profile.name.familyName,
+      lastName: profile.name.givenName,
+      role: UserRole.Customer,
+      metadata: {
+        accessToken,
+      },
+      picture: profile.photos?.[0]?.value,
+    });
+
+    return userCreated;
+  }
+
   async login(user: UserEntity) {
     const authTokenPayload: AuthTokenPayload = new AuthTokenPayload({
       id: user.id,
@@ -82,7 +114,7 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
-      expiresIn: Number(jwtConstants.expiresIn),
+      expiresIn: jwtConstants.expiresIn,
     };
   }
 

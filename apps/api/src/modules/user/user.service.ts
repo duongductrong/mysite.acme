@@ -40,6 +40,26 @@ export class UserService {
     });
   }
 
+  findUserByProvider(
+    payload?: { providerId: string; provider: string },
+    options?: {
+      where?: FindOptionsWhere<UserEntity>;
+      select?: FindOptionsSelect<UserEntity>;
+    },
+  ) {
+    return this.userRepo.findOne({
+      ...options,
+      where: {
+        provider: payload.provider,
+        providerId: payload.providerId,
+        ...options?.where,
+      },
+      select: {
+        ...options?.select,
+      },
+    });
+  }
+
   findUserById(
     id: number,
     options?: {
@@ -80,10 +100,7 @@ export class UserService {
   }
 
   async createUser(
-    payload: Pick<
-      UserEntity,
-      'email' | 'firstName' | 'lastName' | 'role' | 'password' | 'isActive'
-    >,
+    payload: Omit<UserEntity, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>,
   ): Promise<UserEntity | null> {
     const user = await this.userRepo.findOne({
       where: {
@@ -95,7 +112,9 @@ export class UserService {
       throw new BadRequestException('User already exists');
     }
 
-    const hashedPassword = await bcrypt.hash(payload.password, 10);
+    const hashedPassword = !payload.password
+      ? null
+      : await bcrypt.hash(payload.password, 10);
 
     const userCreated = this.userRepo.create({
       role: UserRole.Customer,

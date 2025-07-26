@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   Inject,
+  InternalServerErrorException,
   Param,
   Post,
   Res,
@@ -14,7 +15,7 @@ import { omit } from 'lodash';
 import { ApiBuilder } from 'src/shared/api';
 import { UserEntity } from '../user/entities/user.entity';
 import { AuthService } from './auth.service';
-import { CurrentUser } from './decorators/current-user.decorator';
+import { CurrentUser, GoogleUser } from './decorators/current-user.decorator';
 import { RefreshTokenRequest } from './dtos/refresh-token.dto';
 import { SignUpRequest } from './dtos/sign-up.dto';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
@@ -29,14 +30,10 @@ export class AuthController {
   @Inject(AuthService)
   private readonly authService: AuthService;
 
-  @UseGuards(LocalAuthGuard)
-  @Post('login')
-  async login(
-    @CurrentUser() user: UserEntity,
-    @Res({ passthrough: true }) response: Response,
+  private withCredentials(
+    response: Response,
+    result: Awaited<ReturnType<typeof this.authService.login>>,
   ) {
-    const result = await this.authService.login(user);
-
     response.cookie('accessToken', result.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -48,6 +45,17 @@ export class AuthController {
       secure: process.env.NODE_ENV === 'production',
       maxAge: milliseconds(jwtConstants.refreshExpiresIn),
     });
+  }
+
+  @UseGuards(LocalAuthGuard)
+  @Post('login')
+  async login(
+    @CurrentUser() user: UserEntity,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.authService.login(user);
+
+    this.withCredentials(response, result);
 
     return ApiBuilder.create()
       .setData(result)
@@ -99,12 +107,34 @@ export class AuthController {
 
   @UseGuards(GoogleAuthGuard)
   @Get('/callback/:providerId')
-  async oauthCallback(@Param('providerId') providerId: string) {
+  async oauthCallback(
+    @Param('providerId') providerId: string,
+    @CurrentUser() user: GoogleUser,
+    @Res() response: Response,
+  ) {
+    let actualUser: UserEntity | null = null;
+
+    if (user.provider === 'google') {
+      try {
+        actualUser = await this.authService.verifyGoogleUserOrCreate(
+          user.profile.id,
+          user.profile,
+          user.googleAccessToken,
+        );
+      } catch {
+        throw new InternalServerErrorException(
+          'Failed to verify or create Google user',
+        );
+      }
+    }
+
+    const result = await this.authService.login(actualUser);
+
+    this.withCredentials(response, result);
+
     return ApiBuilder.create()
-      .setData({
-        providerId,
-      })
-      .setMessage('Auth successful')
+      .setData(result)
+      .setMessage('Successfully authenticated with Google')
       .build();
   }
 }

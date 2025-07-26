@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import {
   Column,
   CreateDateColumn,
@@ -7,7 +8,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { UserRole } from '../user.constant';
-import { Exclude } from 'class-transformer';
 
 @Entity({
   name: 'users',
@@ -47,15 +47,48 @@ export class UserEntity {
   @Column({
     type: 'varchar',
     select: false,
+    nullable: true,
   })
   @Exclude()
-  password: string;
+  password?: string;
 
   @Column({
     type: 'enum',
     enum: UserRole,
   })
   role: UserRole;
+
+  @Column({
+    type: 'varchar',
+    nullable: true,
+  })
+  picture?: string;
+
+  @Column({
+    type: 'jsonb',
+    nullable: true,
+  })
+  metadata?: object;
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  provider?: string;
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  providerId?: string;
+
+  @Column({
+    type: 'boolean',
+    nullable: true,
+  })
+  emailVerified?: boolean;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -70,5 +103,5 @@ export class UserEntity {
     type: 'boolean',
     default: false,
   })
-  isActive: boolean;
+  isActive?: boolean;
 }
