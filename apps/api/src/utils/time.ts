@@ -7,7 +7,7 @@ const unitMap = {
 
 export type Time = `${number}${'h' | 'm' | 'd' | 's'}`;
 
-export const milliseconds = (timeString: Time) => {
+export const milliseconds = (timeString: Time | string) => {
   const [value, unit] = timeString.match(/(\d+)([hmsd])/)?.slice(1) ?? [];
   const valueNumber = Number(value);
   const unitNumber = unitMap[unit];

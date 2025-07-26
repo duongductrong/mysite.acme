@@ -1,4 +1,4 @@
-import { milliseconds, Time } from '@/utils/time';
+import { milliseconds } from '@/utils/time';
 import {
   Body,
   Controller,
@@ -40,15 +40,13 @@ export class AuthController {
     response.cookie('accessToken', result.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: Number(jwtConstants.expiresIn),
+      maxAge: milliseconds(jwtConstants.expiresIn),
     });
-
-    console.log(milliseconds(jwtConstants.refreshExpiresIn as Time));
 
     response.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: milliseconds(jwtConstants.refreshExpiresIn as Time),
+      maxAge: milliseconds(jwtConstants.refreshExpiresIn),
     });
 
     return ApiBuilder.create()
