@@ -1,17 +1,14 @@
 import AppNavbar from "@/components/AppNavbar";
 import Header from "@/components/Header";
-import MainGrid from "@/components/MainGrid";
 import SideMenu from "@/components/SideMenu";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import { alpha } from "@mui/material/styles";
-import { createFileRoute } from "@tanstack/react-router";
+import { ComponentProps } from "react";
 
-export const Route = createFileRoute("/_root/")({
-  component: Home,
-});
+export interface AppLayoutProps extends ComponentProps<"div"> {}
 
-function Home(props: { disableCustomTheme?: boolean }) {
+const AppLayout = ({ children, ...props }: AppLayoutProps) => {
   return (
     <Box sx={{ display: "flex" }}>
       <SideMenu />
@@ -36,9 +33,11 @@ function Home(props: { disableCustomTheme?: boolean }) {
           }}
         >
           <Header />
-          <MainGrid />
+          {children}
         </Stack>
       </Box>
     </Box>
   );
-}
+};
+
+export default AppLayout;

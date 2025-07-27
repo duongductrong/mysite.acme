@@ -3,15 +3,15 @@ import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { lazy, Suspense } from "react";
-import ChartUserByCountry from "./ChartUserByCountry";
-import CustomizedTreeView from "./CustomizedTreeView";
-import HighlightedCard from "./HighlightedCard";
-import PageViewsBarChart from "./PageViewsBarChart";
-import SessionsChart from "./SessionsChart";
-import StatCard, { StatCardProps } from "./StatCard";
+import ChartUserByCountry from "../../../components/ChartUserByCountry";
+import CustomizedTreeView from "../../../components/CustomizedTreeView";
+import HighlightedCard from "../../../components/HighlightedCard";
+import PageViewsBarChart from "../../../components/PageViewsBarChart";
+import SessionsChart from "../../../components/SessionsChart";
+import StatCard, { StatCardProps } from "../../../components/StatCard";
 import { Skeleton } from "@mui/material";
 
-const CustomizedDataGrid = lazy(() => import("./CustomizedDataGrid"));
+const CustomizedDataGrid = lazy(() => import("../../../components/CustomizedDataGrid"));
 
 const data: StatCardProps[] = [
   {
